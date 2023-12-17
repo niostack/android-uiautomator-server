@@ -119,6 +119,12 @@ adb shell am start -n com.github.uiautomator/.ToastActivity -e showFloatWindow t
 adb shell am start -n com.github.uiautomator/.ToastActivity -e showFloatWindow false # hide
 ```
 
+## Change language and timezone
+
+```
+adb shell am start -n com.github.uiautomator/.ToastActivity --es language en --es timezone Europe/London
+```
+
 # How to use with Python
 
 ```python
