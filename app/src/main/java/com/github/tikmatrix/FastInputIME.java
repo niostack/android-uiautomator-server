@@ -32,18 +32,10 @@ import java.io.Writer;
 import java.net.Socket;
 import java.util.Random;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class FastInputIME extends InputMethodService {
     private static final String TAG = "FastInputIME";
     private BroadcastReceiver mReceiver = null;
-    protected OkHttpClient httpClient = new OkHttpClient();
     protected static final int INPUT_EDIT = 1;
     Socket socketClient;
 
