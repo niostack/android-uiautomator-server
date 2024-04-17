@@ -19,9 +19,9 @@ c
 运行
 
 ```bash
-APK=$(adb shell pm path com.github.uiautomator | cut -d: -f2)
+APK=$(adb shell pm path com.github.tikmatrix | cut -d: -f2)
 adb shell export CLASSPATH="$APK"\; \
-    exec app_process /system/bin com.github.uiautomator.MinitouchAgent
+    exec app_process /system/bin com.github.tikmatrix.MinitouchAgent
 ```
 
 测试

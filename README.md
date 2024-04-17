@@ -14,9 +14,12 @@ that we can just write PC side script to write UIAutomator tests.
 - Run command:
 
 ```bash
-$ ./gradlew build
-$ ./gradlew packageDebugAndroidTest
+./gradlew build
+./gradlew packageDebugAndroidTest
+mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/app-uiautomator.apk
+mv app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk app/build/outputs/apk/app-uiautomator-test.apk
 ```
+
 
 - Run the jsonrpc server on Android device
 
@@ -31,8 +34,8 @@ simply run the following command
 
 ```
 adb forward tcp:9008 tcp:9008
-adb shell am instrument -w -r -e debug false -e class com.github.uiautomator.stub.Stub \
-    com.github.uiautomator.test/androidx.test.runner.AndroidJUnitRunner
+adb shell am instrument -w -r -e debug false -e class com.github.tikmatrix.stub.Stub \
+    com.github.tikmatrix.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
 # Run
@@ -109,35 +112,21 @@ adb  shell am broadcast -a send.mock -e lat 15.3 -e lon 99
 ## Show toast
 
 ```
-adb shell am start -n com.github.uiautomator/.ToastActivity -e message hello
+adb shell am start -n com.github.tikmatrix/.ToastActivity -e message hello
 ```
 
 ## Float window
 
 ```
-adb shell am start -n com.github.uiautomator/.ToastActivity -e showFloatWindow true # show
-adb shell am start -n com.github.uiautomator/.ToastActivity -e showFloatWindow false # hide
+adb shell am start -n com.github.tikmatrix/.ToastActivity -e showFloatWindow true # show
+adb shell am start -n com.github.tikmatrix/.ToastActivity -e showFloatWindow false # hide
 ```
 
 ## Change language and timezone
 
 ```
-adb shell am start -n com.github.uiautomator/.ToastActivity --es language en --es timezone Europe/London
+adb shell am start -n com.github.tikmatrix/.ToastActivity --es language en --es timezone Europe/London
 ```
-
-# How to use with Python
-
-```python
-import uiautomator2 as u2
-
-d = u2.connect()
-
-d.screen.on()
-d(text="Settings").click()
-d(scrollable=True).scroll.vert.forward()
-```
-
-Refer to python wrapper library [uiautomator](https://github.com/xiaocong/uiautomator).
 
 # How to generate changelog
 [conventional-changelog](https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-cli)

@@ -1,5 +1,6 @@
 package com.android.permission.rom;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -105,7 +106,7 @@ public class VivoUtils {
         if (cursor != null) {
             cursor.getColumnNames();
             if (cursor.moveToFirst()) {
-                int currentmode = cursor.getInt(cursor.getColumnIndex("currentlmode"));
+                @SuppressLint("Range") int currentmode = cursor.getInt(cursor.getColumnIndex("currentlmode"));
                 cursor.close();
                 return currentmode;
             } else {
@@ -134,7 +135,7 @@ public class VivoUtils {
                 .query(uri2, null, selection, selectionArgs, null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
-                int currentmode = cursor.getInt(cursor.getColumnIndex("currentmode"));
+                @SuppressLint("Range") int currentmode = cursor.getInt(cursor.getColumnIndex("currentmode"));
                 cursor.close();
                 return currentmode;
             } else {

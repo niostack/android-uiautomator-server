@@ -23,7 +23,11 @@
 
 buildscript {
     repositories {
+        google()
         mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.0.2' // Ensure this is 3.0.0 or higher
     }
 }
 
@@ -34,8 +38,7 @@ plugins {
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion '28.0.3'
+    compileSdk 34
 
     // version code history
     // 1: original version
@@ -43,9 +46,9 @@ android {
     // 6: input method, battery,rotation monitor
 
     defaultConfig {
-        applicationId "com.github.uiautomator"
+        applicationId "com.github.tikmatrix"
         minSdkVersion 18
-        targetSdkVersion 28
+        targetSdkVersion 34
         versionCode androidGitVersion.code()
         versionName androidGitVersion.name()
     }
@@ -86,8 +89,8 @@ android {
     // fix try-with-resource warning
     // ref: https://stackoverflow.com/questions/40408628/try-with-resources-requires-api-level-19-okhttp
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
@@ -99,6 +102,10 @@ dependencies {
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
     implementation 'commons-cli:commons-cli:1.3.1'
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+
+
 
     // test
     androidTestImplementation 'androidx.test:runner:1.3.0'
@@ -114,5 +121,6 @@ dependencies {
 
 
 repositories {
+    google()
     mavenCentral()
 }

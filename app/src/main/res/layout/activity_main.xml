@@ -3,38 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.github.uiautomator.MainActivity">
+    tools:context="com.github.tikmatrix.MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/atx_agent_status"
-            style="@style/LeftTitle"
-            android:text="@string/atx_agent"
-            android:textStyle="bold" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
-            <Button
-                style="@style/SelectButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:onClick="checkAtxAgentStatus"
-                android:text="刷新服务状态" />
-
-            <Button
-                android:id="@+id/stop_atx_agent"
-                style="@style/SelectButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:onClick="atxAgentStopConfirm"
-                android:text="@string/stop_atxagent" />
-        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -58,12 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
-            <Button
-                style="@style/SelectButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:onClick="checkUiautomatorStatus"
-                android:text="刷新服务状态" />
+
 
             <Button
                 android:id="@+id/testUiautomator"
@@ -74,30 +45,7 @@
                 android:text="测试UIAutomator" />
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/start_uiautomator"
-                style="@style/SelectButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:onClick="startUiautomator"
-                android:text="@string/start_uiautomator" />
-
-            <Button
-                android:id="@+id/stop_uiautomator"
-                style="@style/SelectButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:onClick="stopUiautomator"
-                android:text="@string/stop_uiautomator" />
-
-        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
