@@ -16,8 +16,8 @@ that we can just write PC side script to write UIAutomator tests.
 ```bash
 ./gradlew build
 ./gradlew packageDebugAndroidTest
-mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/app-uiautomator.apk
-mv app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk app/build/outputs/apk/app-uiautomator-test.apk
+mv app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/com.github.tikmatrix.apk
+mv app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk app/build/outputs/apk/com.github.tikmatrix.test.apk
 ```
 
 
