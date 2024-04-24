@@ -10,6 +10,7 @@ import android.content.ClipboardManager;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -82,7 +83,11 @@ public class FastInputIME extends InputMethodService {
 
             // NONEED: filter.addAction(USB_STATE_CHANGE);
             mReceiver = new InputMessageReceiver();
-            registerReceiver(mReceiver, filter);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                registerReceiver(mReceiver, filter, null, null, Context.RECEIVER_NOT_EXPORTED);
+            }else {
+                registerReceiver(mReceiver, filter);
+            }
         }
     }
 

@@ -29,6 +29,7 @@ import androidx.test.uiautomator.UiDevice;
 
 public class DeviceInfo {
     private String _currentPackageName;
+    private String _currentActivityName;
     private int _displayWidth;
     private int _displayHeight;
     private int _displayRotation;
@@ -48,6 +49,7 @@ public class DeviceInfo {
         this._sdkInt = android.os.Build.VERSION.SDK_INT;
 
         UiDevice ud = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        this._currentActivityName=ud.getCurrentActivityName();
         this._currentPackageName = ud.getCurrentPackageName();
         this._displayWidth = ud.getDisplayWidth();
         this._displayHeight = ud.getDisplayHeight();
@@ -142,5 +144,11 @@ public class DeviceInfo {
 
     public void setScreenOn(boolean screenOn) {
         this._screenOn = screenOn;
+    }
+    public String getCurrentActivityName(){
+        return this._currentActivityName;
+    }
+    public void setCurrentActivityName(String currentActivityName){
+        this._currentActivityName=currentActivityName;
     }
 }

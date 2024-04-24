@@ -7,6 +7,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.graphics.Color;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -78,15 +79,21 @@ public class Service extends android.app.Service {
                 .setTicker(getString(R.string.monitor_service_ticker))
                 .setContentTitle(getString(R.string.monitor_service_title))
                 .setContentText(getString(R.string.monitor_service_text))
-                .setContentIntent(PendingIntent.getActivity(this, NOTIFICATION_ID, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+                .setContentIntent(PendingIntent.getActivity(this, NOTIFICATION_ID, notificationIntent, PendingIntent.FLAG_MUTABLE))
                 .setWhen(System.currentTimeMillis());
         Notification notification = builder.build();
-        startForeground(NOTIFICATION_ID, notification);
+//        startForeground(NOTIFICATION_ID, notification);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
+        }else{
+            startForeground(NOTIFICATION_ID, notification);
+        }
 
-        HttpPostNotifier notifier = new HttpPostNotifier("http://127.0.0.1:7912");
-        Context context = getApplicationContext();
-        addMonitor(new BatteryMonitor(context, notifier));
-        addMonitor(new WifiMonitor(this, notifier));
+
+//        HttpPostNotifier notifier = new HttpPostNotifier("http://127.0.0.1:7912");
+//        Context context = getApplicationContext();
+//        addMonitor(new BatteryMonitor(context, notifier));
+//        addMonitor(new WifiMonitor(this, notifier));
     }
 
     public void setNotificationContentText(String text) {
@@ -126,9 +133,9 @@ public class Service extends android.app.Service {
         Log.w(TAG, "Low memory");
     }
 
-    private void addMonitor(AbstractMonitor monitor) {
-        monitors.add(monitor);
-    }
+//    private void addMonitor(AbstractMonitor monitor) {
+//        monitors.add(monitor);
+//    }
 
     private void removeAllMonitor() {
         for (AbstractMonitor monitor : monitors) {
