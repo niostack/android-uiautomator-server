@@ -41,6 +41,8 @@ import fi.iki.elonen.NanoHTTPD;
 
 public class AutomatorHttpServer extends NanoHTTPD {
 
+    private AutomatorService automatorService;
+
     public AutomatorHttpServer(int port) {
         super(port);
     }
@@ -62,6 +64,17 @@ public class AutomatorHttpServer extends NanoHTTPD {
             return newFixedLengthResponse("Server stopped!!!");
         } else if ("/ping".equals(uri)) {
             return newFixedLengthResponse("pong");
+        } else if ("/hierarchy".equals(uri)) {
+            if (automatorService != null) {
+                String xml=automatorService.dumpWindowHierarchy(false);
+                Response response =  newFixedLengthResponse(xml);
+                response.addHeader("Access-Control-Allow-Origin", "*");
+                response.addHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+                response.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+                response.addHeader("Access-Control-Allow-Credentials", "true");
+                return response;
+            }
+            return newFixedLengthResponse("automatorService stopped!!!");
         } else if ("/screenshot/0".equals(uri)) {
             float scale = 1.0f;
             if (params.containsKey("scale")) {
@@ -81,10 +94,20 @@ public class AutomatorHttpServer extends NanoHTTPD {
             UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).takeScreenshot(f, scale, quality);
 
             try {
-                return newChunkedResponse(Response.Status.OK, "image/png", new FileInputStream(f));
+                Response response = newChunkedResponse(Response.Status.OK, "image/png", new FileInputStream(f));
+                response.addHeader("Access-Control-Allow-Origin", "*");
+                response.addHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+                response.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+                response.addHeader("Access-Control-Allow-Credentials", "true");
+                return response;
             } catch (FileNotFoundException e) {
                 Log.e(e.getMessage());
-                return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "Internal Server Error!!!");
+                Response response = newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "Internal Server Error!!!");
+                response.addHeader("Access-Control-Allow-Origin", "*");
+                response.addHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+                response.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+                response.addHeader("Access-Control-Allow-Credentials", "true");
+                return response;
             }
         } else if (router.containsKey(uri)) {
             JsonRpcServer jsonRpcServer = router.get(uri);
@@ -106,4 +129,8 @@ public class AutomatorHttpServer extends NanoHTTPD {
             return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not Found!!!");
     }
 
+    public void setAutomatorService(AutomatorService automatorService) {
+        this.automatorService=automatorService;
+
+    }
 }

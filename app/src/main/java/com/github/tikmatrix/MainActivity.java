@@ -3,11 +3,11 @@ package com.github.tikmatrix;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,18 +18,14 @@ import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.permission.FloatWindowManager;
 import com.github.tikmatrix.util.MemoryManager;
 import com.github.tikmatrix.util.OkhttpManager;
 import com.github.tikmatrix.util.Permissons4App;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
 
@@ -44,14 +40,8 @@ public class MainActivity extends Activity {
     public static final String TAG="TIKMATRIX";
     private TextView tvInStorage;
     private TextView textViewIP;
-    private TextView tvAgentStatus;
-    private TextView tvAutomatorStatus;
-    private TextView tvAutomatorMode;
     private TextView tvServiceMessage;
 
-    private WindowManager windowManager = null;
-    private boolean isWindowShown = false;
-    private FloatView floatView;
 
     private OkhttpManager okhttpManager = OkhttpManager.getSingleton();
 
@@ -82,32 +72,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        tvAutomatorStatus = findViewById(R.id.uiautomator_status);
-        tvAutomatorMode = findViewById(R.id.uiautomator_mode);
         tvServiceMessage = findViewById(R.id.serviceMessage);
-
-        Button btnFinish = findViewById(R.id.btn_finish);
-        btnFinish.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                stopService(new Intent(MainActivity.this, Service.class));
-                finish();
-            }
-        });
-
-        Button btnIdentify = findViewById(R.id.btn_identify);
-        btnIdentify.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, IdentifyActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("theme", "RED");
-                intent.putExtras(bundle);
-                startActivity(intent);
-            }
-        });
-
         findViewById(R.id.accessibility).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -138,6 +103,37 @@ public class MainActivity extends Activity {
                 Manifest.permission.READ_SMS,
                 Manifest.permission.RECEIVE_SMS};
         Permissons4App.initPermissions(this, permissions);
+
+
+    }
+    private void checkNotificationPermission() {
+        if (!isNotificationPermissionGranted()) {
+            // 通知权限未授予，显示提示
+            Toast.makeText(this, "请授予通知权限以显示通知", Toast.LENGTH_SHORT).show();
+
+            // 引导用户到应用设置页面
+            Intent intent = new Intent();
+            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            Uri uri = Uri.fromParts("package", getPackageName(), null);
+            intent.setData(uri);
+            startActivity(intent);
+        }else{
+            Toast.makeText(this, "通知权限已授予", Toast.LENGTH_SHORT).show();
+            Intent serviceIntent = new Intent(this, Service.class);
+            startService(serviceIntent);
+        }
+    }
+    private boolean isNotificationPermissionGranted() {
+        NotificationManager notificationManager = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            notificationManager = getSystemService(NotificationManager.class);
+        }
+        if (notificationManager != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                return notificationManager.areNotificationsEnabled();
+            }
+        }
+        return false;
     }
 
     @Override
@@ -151,47 +147,12 @@ public class MainActivity extends Activity {
         Permissons4App.handleRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    public void showFloatWindow(View view) {
-
-        boolean floatEnabled = FloatWindowManager.getInstance().checkFloatPermission(MainActivity.this);
-        if (!floatEnabled) {
-            Log.i(TAG, "float permission not checked");
-            return;
-        }
-        if (floatView == null) {
-            floatView = new FloatView(MainActivity.this);
-        }
-        floatView.show();
-    }
-
-
-
-
-
-    private void uiToaster(final String msg) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-
-    public void dismissFloatWindow(View view) {
-        if (floatView != null) {
-            Log.d(TAG, "remove floatView immediate");
-            floatView.hide();
-        }
-    }
-
-
     public void testUiautomator(View view) {
         String json = "{" +
                 "            \"jsonrpc\": \"2.0\",\n" +
                 "            \"id\": \"14d3bbb25360373624ea5b343c5abb1f\", \n" +
-                "            \"method\": \"dumpWindowHierarchy\",\n" +
-                "            \"params\": [false]\n" +
+                "            \"method\": \"deviceInfo\",\n" +
+                "            \"params\": []\n" +
                 "        }";
         Request request = new Request.Builder()
                 .url("http://127.0.0.1:9008/jsonrpc/0")
@@ -231,6 +192,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        checkNotificationPermission();
+
         tvInStorage.setText(Formatter.formatFileSize(this, MemoryManager.getAvailableInternalMemorySize()) + "/" + Formatter.formatFileSize(this, MemoryManager.getTotalExternalMemorySize()));
         checkNetworkAddress(null);
     }

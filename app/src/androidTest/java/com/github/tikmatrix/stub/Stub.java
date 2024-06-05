@@ -25,24 +25,25 @@ package com.github.tikmatrix.stub;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.IBinder;
 import android.os.RemoteException;
 import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.SdkSuppress;
+import androidx.test.rule.ServiceTestRule;
 import androidx.test.runner.AndroidJUnit4;
-import androidx.test.uiautomator.By;
-import androidx.test.uiautomator.Configurator;
 import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObjectNotFoundException;
-import androidx.test.uiautomator.Until;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tikmatrix.Service;
 import com.googlecode.jsonrpc4j.ErrorResolver;
 import com.googlecode.jsonrpc4j.JsonRpcServer;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,6 +51,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Use JUnit test to start the uiautomator jsonrpc server.
@@ -69,8 +72,9 @@ public class Stub {
 
     @Before
     public void setUp() throws Exception {
-        launchService();
-        JsonRpcServer jrs = new JsonRpcServer(new ObjectMapper(), new AutomatorServiceImpl(), AutomatorService.class);
+        Log.i(TAG, "Launch Stub Server" );
+        AutomatorService automatorService = new AutomatorServiceImpl();
+        JsonRpcServer jrs = new JsonRpcServer(new ObjectMapper(), automatorService, AutomatorService.class);
         jrs.setShouldLogInvocationErrors(true);
         jrs.setErrorResolver(new ErrorResolver() {
             @Override
@@ -86,57 +90,20 @@ public class Stub {
             }
         });
         server.route("/jsonrpc/0", jrs);
+        server.setAutomatorService(automatorService);
         server.start();
     }
 
-    private void launchPackage(String packageName) {
-        Log.i(TAG, "Launch " + packageName);
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        Context context = InstrumentationRegistry.getContext();
-        final Intent intent = context.getPackageManager()
-                .getLaunchIntentForPackage(packageName);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        context.startActivity(intent);
 
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), LAUNCH_TIMEOUT);
-        device.pressHome();
-    }
 
-    private void launchService() throws RemoteException {
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        Context context = InstrumentationRegistry.getContext();
-        device.wakeUp();
 
-        // Wait for launcher
-        String launcherPackage = device.getLauncherPackageName();
-        Boolean ready = device.wait(Until.hasObject(By.pkg(launcherPackage).depth(0)), LAUNCH_TIMEOUT);
-        if (!ready) {
-            Log.i(TAG, "Wait for launcher timeout");
-            return;
-        }
 
-        Log.d("Launch service");
-        startMonitorService(context);
-    }
-
-    private void startMonitorService(Context context) {
-        Intent intent = new Intent("com.github.tikmatrix.ACTION_START");
-        intent.setPackage("com.github.tikmatrix"); // fix error: Service Intent must be explicit
-        context.startService(intent);
-    }
 
     @After
     public void tearDown() {
         server.stop();
-        Context context = InstrumentationRegistry.getContext();
-        stopMonitorService(context);
     }
 
-    private void stopMonitorService(Context context) {
-        Intent intent = new Intent("com.github.tikmatrix.ACTION_STOP");
-        intent.setPackage("com.github.tikmatrix");
-        context.startService(intent);
-    }
 
     @Test
     @LargeTest

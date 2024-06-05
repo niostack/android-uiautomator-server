@@ -33,8 +33,9 @@ simply run the following command
 
 ```
 adb forward tcp:9008 tcp:9008
-adb shell am instrument -w -r -e debug false -e class com.github.tikmatrix.stub.Stub \
-    com.github.tikmatrix.test/androidx.test.runner.AndroidJUnitRunner
+adb shell am instrument -w -r -e debug false -e class com.github.tikmatrix.stub.Stub com.github.tikmatrix.test/androidx.test.runner.AndroidJUnitRunner
+adb shell am startservice com.github.tikmatrix/.Service
+
 ```
 
 # Run

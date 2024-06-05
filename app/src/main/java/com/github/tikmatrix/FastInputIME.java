@@ -11,7 +11,6 @@ import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -19,17 +18,11 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.net.Socket;
 import java.util.Random;
 
@@ -83,9 +76,11 @@ public class FastInputIME extends InputMethodService {
 
             // NONEED: filter.addAction(USB_STATE_CHANGE);
             mReceiver = new InputMessageReceiver();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                registerReceiver(mReceiver, filter, null, null, Context.RECEIVER_NOT_EXPORTED);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Log.i(TAG, "registerReceiver >= 8");
+                registerReceiver(mReceiver, filter, null, null, Context.RECEIVER_EXPORTED);
             }else {
+                Log.i(TAG, "registerReceiver < 8");
                 registerReceiver(mReceiver, filter);
             }
         }
@@ -128,14 +123,15 @@ public class FastInputIME extends InputMethodService {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+
             String action = intent.getAction();
+            Log.i(TAG, action);
             String msgText;
             int code;
             InputConnection ic = getCurrentInputConnection();
             if (ic == null) {
                 return;
             }
-            Log.i(TAG, action);
             switch (action) {
                 case "ADB_INPUT_TEXT":
                     /* test method

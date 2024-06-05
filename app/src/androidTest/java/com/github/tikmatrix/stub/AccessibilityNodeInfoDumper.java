@@ -39,6 +39,7 @@ class AccessibilityNodeInfoDumper {
     }
 
     public static void dumpWindowHierarchy(UiDevice device, OutputStream out) throws IOException {
+        Log.i("----------------", "dumpWindowHierarchy start");
         XmlSerializer serializer = Xml.newSerializer();
         serializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
         serializer.setOutput(out, "UTF-8");
@@ -55,6 +56,7 @@ class AccessibilityNodeInfoDumper {
 
         serializer.endTag("", "hierarchy");
         serializer.endDocument();
+        Log.i("----------------", "dumpWindowHierarchy end:");
     }
 
     private static AccessibilityNodeInfo[] getWindowRoots(UiDevice device) {

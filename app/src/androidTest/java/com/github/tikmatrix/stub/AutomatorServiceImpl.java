@@ -58,6 +58,7 @@ import com.github.tikmatrix.stub.watcher.PressKeysWatcher;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
@@ -293,23 +294,29 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public String dumpWindowHierarchy(boolean compressed) {
         device.setCompressedLayoutHeirarchy(compressed);
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
+//        ByteArrayOutputStream os1 = new ByteArrayOutputStream();
+        ByteArrayOutputStream os2 = new ByteArrayOutputStream();
         try {
-            // Original code: device.dumpWindowHierarchy(os);
+            // Original code:
+//            device.dumpWindowHierarchy(os1);
             // The bellow code fix xml encode error
-            AccessibilityNodeInfoDumper.dumpWindowHierarchy(device, os);
-            return os.toString("UTF-8");
+            AccessibilityNodeInfoDumper.dumpWindowHierarchy(device, os2);
+            String xml=os2.toString("UTF-8");
+            android.util.Log.i("----------------", "dumpWindowHierarchy end:"+os2.size());
+            android.util.Log.i("----------------", "dumpWindowHierarchy end:"+xml);
+            return xml;
         } catch (IOException e) {
             Log.d("dumpWindowHierarchy got IOException: " + e);
+            return e.getMessage();
         } finally {
             try {
-                os.close();
+//                os1.close();
+                os2.close();
             } catch (IOException e) {
                 // ignore
             }
         }
 
-        return null;
     }
 
     /**
