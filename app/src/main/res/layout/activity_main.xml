@@ -14,20 +14,7 @@
 
 
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
 
-
-            <Button
-                android:id="@+id/testUiautomator"
-                style="@style/SelectButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:onClick="testUiautomator"
-                android:text="测试UIAutomator" />
-        </LinearLayout>
 
 
 
@@ -49,7 +36,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-
+            <Button
+                android:id="@+id/testUiautomator"
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:onClick="testUiautomator"
+                android:text="@string/test_uiautomator" />
             <Button
                 android:id="@+id/development_settings"
                 style="@style/SelectButton"
@@ -57,12 +50,7 @@
                 android:layout_weight="1"
                 android:text="@string/develop_mode" />
 
-            <Button
-                android:id="@+id/accessibility"
-                style="@style/SelectButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:text="@string/barrier_free" />
+
         </LinearLayout>
 
         <LinearLayout

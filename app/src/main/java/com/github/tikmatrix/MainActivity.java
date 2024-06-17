@@ -73,19 +73,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         tvServiceMessage = findViewById(R.id.serviceMessage);
-        findViewById(R.id.accessibility).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
-            }
-        });
-
-        findViewById(R.id.development_settings).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS));
-            }
-        });
+        findViewById(R.id.development_settings).setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)));
 
         Intent intent = getIntent();
         boolean isHide = intent.getBooleanExtra("hide", false);
@@ -96,14 +84,14 @@ public class MainActivity extends Activity {
         textViewIP = findViewById(R.id.ip_address);
         tvInStorage = findViewById(R.id.in_storage);
 
-        String[] permissions = new String[]{
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.READ_PHONE_NUMBERS,
-                Manifest.permission.READ_SMS,
-                Manifest.permission.RECEIVE_SMS};
-        Permissons4App.initPermissions(this, permissions);
-
+//        String[] permissions = new String[]{
+//                Manifest.permission.ACCESS_COARSE_LOCATION,
+//                Manifest.permission.READ_PHONE_STATE,
+//                Manifest.permission.READ_PHONE_NUMBERS,
+//                Manifest.permission.READ_SMS,
+//                Manifest.permission.RECEIVE_SMS};
+//        Permissons4App.initPermissions(this, permissions);
+        testUiautomator(this.findViewById(R.id.testUiautomator));
 
     }
     private void checkNotificationPermission() {
