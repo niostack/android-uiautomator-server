@@ -62,8 +62,6 @@ import java.util.concurrent.TimeoutException;
 @RunWith(AndroidJUnit4.class)
 @SdkSuppress(minSdkVersion = 18)
 public class Stub {
-    private final String TAG = "UIAUTOMATOR";
-    private static final int LAUNCH_TIMEOUT = 5000;
     // http://www.jsonrpc.org/specification#error_object
     private static final int CUSTOM_ERROR_CODE = -32001;
 
@@ -72,7 +70,7 @@ public class Stub {
 
     @Before
     public void setUp() throws Exception {
-        Log.i(TAG, "Launch Stub Server" );
+        Log.i( "Launch Stub Server" );
         AutomatorService automatorService = new AutomatorServiceImpl();
         JsonRpcServer jrs = new JsonRpcServer(new ObjectMapper(), automatorService, AutomatorService.class);
         jrs.setShouldLogInvocationErrors(true);

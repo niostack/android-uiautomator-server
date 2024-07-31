@@ -28,6 +28,7 @@ import android.app.UiAutomation;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.SoundPool;
@@ -51,14 +52,12 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 
 
-import com.github.tikmatrix.ToastHelper;
 import com.github.tikmatrix.stub.watcher.ClickUiObjectWatcher;
 import com.github.tikmatrix.stub.watcher.PressKeysWatcher;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
@@ -164,13 +163,11 @@ public class AutomatorServiceImpl implements AutomatorService {
 
     @Override
     public boolean makeToast(final String text, final int duration) {
-
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                ToastHelper.makeText(InstrumentationRegistry.getTargetContext(), text, duration).show();
-            }
-        });
+        Intent intent = new Intent();
+        intent.setAction("com.github.tikmatrix.ACTION.SHOW_TOAST");
+        intent.putExtra("toast_text", text);
+        intent.putExtra("duration", duration);
+        mInstrumentation.getTargetContext().sendBroadcast(intent);
         return true;
     }
 

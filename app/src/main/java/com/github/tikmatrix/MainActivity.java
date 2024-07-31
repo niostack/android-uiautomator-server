@@ -14,20 +14,26 @@ import android.os.Bundle;
 import android.provider.Settings;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.FileProvider;
+import android.content.IntentFilter;
+
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.tikmatrix.util.MemoryManager;
 import com.github.tikmatrix.util.OkhttpManager;
 import com.github.tikmatrix.util.Permissons4App;
 
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -37,45 +43,50 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MainActivity extends Activity {
-    public static final String TAG="TIKMATRIX";
+    public static final String TAG="TikMatrix";
     private TextView tvInStorage;
     private TextView textViewIP;
-    private TextView tvServiceMessage;
+    private Switch switchNotification;
+    private Switch switchFloatingWindow;
+    private TextView tvWanIp;
 
 
     private OkhttpManager okhttpManager = OkhttpManager.getSingleton();
 
-    private static final class TextViewSetter implements Runnable {
-        private final TextView v;
-        private final String what;
-        private final int color;
 
-        TextViewSetter(TextView v, String what, int color) {
-            this.v = v;
-            this.what = what;
-            this.color = color;
-        }
 
-        TextViewSetter(TextView v, String what) {
-            this(v, what, Color.BLACK);
-        }
-
-        @Override
-        public void run() {
-            v.setText(what);
-            v.setTextColor(color);
-        }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
+    @SuppressLint("SetTextI18n")
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        tvServiceMessage = findViewById(R.id.serviceMessage);
-        findViewById(R.id.development_settings).setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)));
-
+        ((TextView) findViewById(R.id.product_name)).setText(Build.MANUFACTURER + " " + Build.MODEL);
+        ((TextView) findViewById(R.id.android_system_version)).setText("Android " + Build.VERSION.RELEASE+" SDK " + Build.VERSION.SDK_INT);
+        ((TextView) findViewById(R.id.language_timezone)).setText(Locale.getDefault().getLanguage()+"/"+TimeZone.getDefault().getID());
+        switchNotification = findViewById(R.id.notification_permission);
+        switchFloatingWindow = findViewById(R.id.floating_window_permission);
+        switchNotification.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                requestNotificationPermission();
+            } else {
+                NotificationManager notificationManager = null;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    notificationManager = getSystemService(NotificationManager.class);
+                }
+                if (notificationManager != null) {
+                    notificationManager.cancelAll();
+                }
+            }
+        });
+        switchFloatingWindow.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                requestFloatingWindowPermission();
+            }
+        });
         Intent intent = getIntent();
+        String action=intent.getAction();
+        Log.i(TAG, "action: " + action);
         boolean isHide = intent.getBooleanExtra("hide", false);
         if (isHide) {
             Log.i(TAG, "launch args hide:true, move to background");
@@ -83,45 +94,88 @@ public class MainActivity extends Activity {
         }
         textViewIP = findViewById(R.id.ip_address);
         tvInStorage = findViewById(R.id.in_storage);
-
-//        String[] permissions = new String[]{
-//                Manifest.permission.ACCESS_COARSE_LOCATION,
-//                Manifest.permission.READ_PHONE_STATE,
-//                Manifest.permission.READ_PHONE_NUMBERS,
-//                Manifest.permission.READ_SMS,
-//                Manifest.permission.RECEIVE_SMS};
-//        Permissons4App.initPermissions(this, permissions);
-        testUiautomator(this.findViewById(R.id.testUiautomator));
-
-    }
-    private void checkNotificationPermission() {
-        if (!isNotificationPermissionGranted()) {
-            // 通知权限未授予，显示提示
-            Toast.makeText(this, "请授予通知权限以显示通知", Toast.LENGTH_SHORT).show();
-
-            // 引导用户到应用设置页面
-            Intent intent = new Intent();
-            intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-            Uri uri = Uri.fromParts("package", getPackageName(), null);
-            intent.setData(uri);
-            startActivity(intent);
+        tvWanIp = findViewById(R.id.wan_ip_address);
+        String[] permissions = new String[0];
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            permissions = new String[]{
+                    Manifest.permission.READ_MEDIA_IMAGES,
+                    Manifest.permission.READ_MEDIA_VIDEO
+            };
         }else{
-            Toast.makeText(this, "通知权限已授予", Toast.LENGTH_SHORT).show();
-            Intent serviceIntent = new Intent(this, Service.class);
-            startService(serviceIntent);
+            permissions = new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+            };
         }
+        Permissons4App.initPermissions(this, permissions);
+        // register BroadcastReceiver
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("com.github.tikmatrix.ACTION.SHOW_TOAST");
+        registerReceiver(new AdbBroadcastReceiver(), intentFilter, Context.RECEIVER_EXPORTED);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.i(TAG, "onNewIntent: " + intent.getAction());
+        if ("android.intent.action.SEND_MULTIPLE".equals(intent.getAction())) {
+            //get extras
+            String extras = intent.getStringExtra(Intent.EXTRA_STREAM);
+            Log.i(TAG, "extras: " + extras);
+            if (extras == null || extras.isEmpty()) {
+                return;
+            }
+            ArrayList<Uri> uris = new ArrayList<Uri>();
+            for (String uriString : extras.split(",")) {
+                Log.i(TAG, "uriString: " + uriString);
+                File file = new File(uriString);
+                Uri uri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
+                Log.i(TAG, "uri: " + uri);
+                uris.add(uri);
+            }
+
+            //send to com.zhiliaoapp.musically
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+            sendIntent.setType("image/*");
+            sendIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+            sendIntent.setPackage("com.zhiliaoapp.musically");
+            sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(sendIntent);
+            Log.d(TAG, "onReceive: sent to com.zhiliaoapp.musically");
+            moveTaskToBack(true);
+        }
+    }
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager notificationManager =getSystemService(NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.cancelAll();
+            }
+            Intent intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+            startActivity(intent);
+        }
+    }
+
+    private void requestFloatingWindowPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        }
+
     }
     private boolean isNotificationPermissionGranted() {
-        NotificationManager notificationManager = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return NotificationManagerCompat.from(this).areNotificationsEnabled();
+        }
+        return true;
+    }
+    private boolean isFloatingWindowPermissionGranted() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            notificationManager = getSystemService(NotificationManager.class);
+            return Settings.canDrawOverlays(this);
         }
-        if (notificationManager != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                return notificationManager.areNotificationsEnabled();
-            }
-        }
-        return false;
+        return true;
     }
 
     @Override
@@ -135,7 +189,15 @@ public class MainActivity extends Activity {
         Permissons4App.handleRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    public void testUiautomator(View view) {
+    public void testUiautomator() {
+        //send boardcast to uiautomator
+//        Intent intent = new Intent();
+//        intent.setAction("com.github.tikmatrix.ACTION.SHOW_TOAST");
+//        intent.putExtra("toast_text", "test uiautomator");
+//        intent.putExtra("duration", 2000);
+//        sendBroadcast(intent);
+//        Log.i(TAG, "send boardcast to AdbBroadcastReceiver");
+
         String json = "{" +
                 "            \"jsonrpc\": \"2.0\",\n" +
                 "            \"id\": \"14d3bbb25360373624ea5b343c5abb1f\", \n" +
@@ -150,25 +212,20 @@ public class MainActivity extends Activity {
 
             @Override
             public void onFailure(Call call, IOException e) {
-                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                    Log.e(TAG, e.toString());
             }
 
             @Override
             public void onResponse(Call call, Response response) {
                 try {
                     if (response.body() == null || !response.isSuccessful()) {
-                        runOnUiThread(new TextViewSetter(tvServiceMessage, "UIAutomator not responding!"));
+                        Log.e(TAG, response.toString());
                         return;
                     }
                     String responseData = response.body().string();
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, responseData));
-//                    JSONObject obj = new JSONObject(responseData);
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                    Log.i(TAG, responseData);
                 } catch (IOException e) {
-                    e.printStackTrace();
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                    Log.e(TAG, e.toString());
                 }
             }
         });
@@ -180,10 +237,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-//        checkNotificationPermission();
-
+        switchNotification.setChecked(isNotificationPermissionGranted());
+        switchFloatingWindow.setChecked(isFloatingWindowPermissionGranted());
         tvInStorage.setText(Formatter.formatFileSize(this, MemoryManager.getAvailableInternalMemorySize()) + "/" + Formatter.formatFileSize(this, MemoryManager.getTotalExternalMemorySize()));
         checkNetworkAddress(null);
+
     }
 
     public void checkNetworkAddress(View v) {
@@ -192,6 +250,32 @@ public class MainActivity extends Activity {
         String ipStr = (ip & 0xFF) + "." + ((ip >> 8) & 0xFF) + "." + ((ip >> 16) & 0xFF) + "." + ((ip >> 24) & 0xFF);
         textViewIP.setText(ipStr);
         textViewIP.setTextColor(Color.BLUE);
+
+        Log.i(TAG, "checkNetworkAddress: " + ipStr);
+        //test
+        Request request = new Request.Builder().url("https://api.tikmatrix.com/ip")
+                .get()
+                .build();
+        okhttpManager.newCall(request, new Callback() {
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e(TAG, e.toString());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String content = response.body().string();
+                    Log.i(TAG, content);
+                    runOnUiThread(() -> {
+                        tvWanIp.setText(content);
+                        tvWanIp.setTextColor(Color.BLUE);
+                    });
+                }
+            }
+        });
+        testUiautomator();
     }
 
     @Override
