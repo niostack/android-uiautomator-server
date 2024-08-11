@@ -49,6 +49,7 @@ public class MainActivity extends Activity {
     private Switch switchNotification;
     private Switch switchFloatingWindow;
     private TextView tvWanIp;
+    private TextView tvRunningStatus;
 
 
     private OkhttpManager okhttpManager = OkhttpManager.getSingleton();
@@ -63,7 +64,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         ((TextView) findViewById(R.id.product_name)).setText(Build.MANUFACTURER + " " + Build.MODEL);
         ((TextView) findViewById(R.id.android_system_version)).setText("Android " + Build.VERSION.RELEASE+" SDK " + Build.VERSION.SDK_INT);
-        ((TextView) findViewById(R.id.language_timezone)).setText(Locale.getDefault().getLanguage()+"/"+TimeZone.getDefault().getID());
+        ((TextView) findViewById(R.id.language)).setText(Locale.getDefault().getCountry() + "-" + Locale.getDefault().getLanguage());
+        ((TextView) findViewById(R.id.timezone)).setText(TimeZone.getDefault().getDisplayName());
         switchNotification = findViewById(R.id.notification_permission);
         switchFloatingWindow = findViewById(R.id.floating_window_permission);
         switchNotification.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -95,6 +97,7 @@ public class MainActivity extends Activity {
         textViewIP = findViewById(R.id.ip_address);
         tvInStorage = findViewById(R.id.in_storage);
         tvWanIp = findViewById(R.id.wan_ip_address);
+        tvRunningStatus = findViewById(R.id.running_status);
         String[] permissions = new String[0];
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             permissions = new String[]{
@@ -108,9 +111,9 @@ public class MainActivity extends Activity {
         }
         Permissons4App.initPermissions(this, permissions);
         // register BroadcastReceiver
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("com.github.tikmatrix.ACTION.SHOW_TOAST");
-        registerReceiver(new AdbBroadcastReceiver(), intentFilter, Context.RECEIVER_EXPORTED);
+//        IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction("com.github.tikmatrix.ACTION.SHOW_TOAST");
+//        registerReceiver(new AdbBroadcastReceiver(), intentFilter, Context.RECEIVER_EXPORTED);
     }
 
     @Override
@@ -208,11 +211,16 @@ public class MainActivity extends Activity {
                 .url("http://127.0.0.1:9008/jsonrpc/0")
                 .post(RequestBody.create(MediaType.parse("application/json"), json))
                 .build();
+        tvRunningStatus.setText("connecting...");
         okhttpManager.newCall(request, new Callback() {
 
             @Override
             public void onFailure(Call call, IOException e) {
                     Log.e(TAG, e.toString());
+                    runOnUiThread(() -> {
+                        tvRunningStatus.setText("fail");
+                        tvRunningStatus.setTextColor(Color.RED);
+                    });
             }
 
             @Override
@@ -220,12 +228,25 @@ public class MainActivity extends Activity {
                 try {
                     if (response.body() == null || !response.isSuccessful()) {
                         Log.e(TAG, response.toString());
+                        runOnUiThread(() -> {
+                            tvRunningStatus.setText("fail");
+                            tvRunningStatus.setTextColor(Color.RED);
+                        });
                         return;
                     }
                     String responseData = response.body().string();
                     Log.i(TAG, responseData);
+                    runOnUiThread(() -> {
+                        tvRunningStatus.setText("success");
+                        tvRunningStatus.setTextColor(Color.GREEN);
+                    });
+
                 } catch (IOException e) {
                     Log.e(TAG, e.toString());
+                    runOnUiThread(() -> {
+                        tvRunningStatus.setText("fail");
+                        tvRunningStatus.setTextColor(Color.RED);
+                    });
                 }
             }
         });
@@ -241,7 +262,7 @@ public class MainActivity extends Activity {
         switchFloatingWindow.setChecked(isFloatingWindowPermissionGranted());
         tvInStorage.setText(Formatter.formatFileSize(this, MemoryManager.getAvailableInternalMemorySize()) + "/" + Formatter.formatFileSize(this, MemoryManager.getTotalExternalMemorySize()));
         checkNetworkAddress(null);
-
+        testUiautomator();
     }
 
     public void checkNetworkAddress(View v) {
@@ -275,7 +296,7 @@ public class MainActivity extends Activity {
                 }
             }
         });
-        testUiautomator();
+
     }
 
     @Override

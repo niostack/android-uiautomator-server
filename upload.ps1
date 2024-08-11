@@ -1,0 +1,2 @@
+wrangler r2 object put tikmatrix/com.github.tikmatrix.apk --file=app\build\outputs\apk\debug\app-debug.apk
+wrangler r2 object put tikmatrix/com.github.tikmatrix.test.apk --file=app\build\outputs\apk\androidTest\debug\app-debug-androidTest.apk
