@@ -31,8 +31,13 @@ import com.github.tikmatrix.util.Permissons4App;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TimeZone;
 
 import okhttp3.Call;
@@ -95,6 +100,9 @@ public class MainActivity extends Activity {
             moveTaskToBack(true);
         }
         textViewIP = findViewById(R.id.ip_address);
+        String ipAddress = getEthernetIpAddress();
+        textViewIP.setText(ipAddress);
+        textViewIP.setTextColor(Color.BLUE);
         tvInStorage = findViewById(R.id.in_storage);
         tvWanIp = findViewById(R.id.wan_ip_address);
         tvRunningStatus = findViewById(R.id.running_status);
@@ -110,6 +118,7 @@ public class MainActivity extends Activity {
             };
         }
         Permissons4App.initPermissions(this, permissions);
+
         // register BroadcastReceiver
 //        IntentFilter intentFilter = new IntentFilter();
 //        intentFilter.addAction("com.github.tikmatrix.ACTION.SHOW_TOAST");
@@ -264,15 +273,37 @@ public class MainActivity extends Activity {
         checkNetworkAddress(null);
         testUiautomator();
     }
+    public String getEthernetIpAddress() {
+        try {
+            List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+            for (NetworkInterface networkInterface : interfaces) {
 
+                // 排除回环接口和未活动的接口
+                if (!networkInterface.isLoopback() && networkInterface.isUp()) {
+                    List<InetAddress> addresses = Collections.list(networkInterface.getInetAddresses());
+                    for (InetAddress address : addresses) {
+                        if (!address.isLoopbackAddress() && address instanceof java.net.Inet4Address) {
+                            if (Objects.equals(address.getHostAddress(), "0.0.0.0")) {
+                                continue;
+                            }
+                            return address.getHostAddress();
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "0.0.0.0";
+    }
     public void checkNetworkAddress(View v) {
-        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        int ip = wifiManager.getConnectionInfo().getIpAddress();
-        String ipStr = (ip & 0xFF) + "." + ((ip >> 8) & 0xFF) + "." + ((ip >> 16) & 0xFF) + "." + ((ip >> 24) & 0xFF);
-        textViewIP.setText(ipStr);
-        textViewIP.setTextColor(Color.BLUE);
-
-        Log.i(TAG, "checkNetworkAddress: " + ipStr);
+//        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+//        int ip = wifiManager.getConnectionInfo().getIpAddress();
+//        String ipStr = (ip & 0xFF) + "." + ((ip >> 8) & 0xFF) + "." + ((ip >> 16) & 0xFF) + "." + ((ip >> 24) & 0xFF);
+//        textViewIP.setText(ipStr);
+//        textViewIP.setTextColor(Color.BLUE);
+//
+//        Log.i(TAG, "checkNetworkAddress: " + ipStr);
         //test
         Request request = new Request.Builder().url("https://api.tikmatrix.com/ip")
                 .get()
