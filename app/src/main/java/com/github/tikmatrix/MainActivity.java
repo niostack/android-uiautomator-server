@@ -137,8 +137,13 @@ public class MainActivity extends Activity {
                 return;
             }
             ArrayList<Uri> uris = new ArrayList<Uri>();
+            String packagename="com.zhiliaoapp.musically";
             for (String uriString : extras.split(",")) {
                 Log.i(TAG, "uriString: " + uriString);
+                if (uriString.startsWith("com.")) {
+                    packagename = uriString;
+                    continue;
+                }
                 File file = new File(uriString);
                 Uri uri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".provider", file);
                 Log.i(TAG, "uri: " + uri);
@@ -150,10 +155,10 @@ public class MainActivity extends Activity {
             sendIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
             sendIntent.setType("image/*");
             sendIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-            sendIntent.setPackage("com.zhiliaoapp.musically");
+            sendIntent.setPackage(packagename);
             sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             startActivity(sendIntent);
-            Log.d(TAG, "onReceive: sent to com.zhiliaoapp.musically");
+            Log.d(TAG, "onReceive: sent to " + packagename);
             moveTaskToBack(true);
         }
     }
