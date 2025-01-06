@@ -16,7 +16,7 @@ public class OkhttpManager {
     private volatile static OkhttpManager singleton;
 
     private OkhttpManager(){
-        client = new OkHttpClient();
+        client = new OkHttpClient.Builder().proxy(null).build();
     }
     public static OkhttpManager getSingleton() {
         if (singleton == null) {

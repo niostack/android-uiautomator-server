@@ -25,25 +25,20 @@ package com.github.tikmatrix.stub;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.IBinder;
-import android.os.RemoteException;
+
 import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.SdkSuppress;
-import androidx.test.rule.ServiceTestRule;
 import androidx.test.runner.AndroidJUnit4;
-import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObjectNotFoundException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.tikmatrix.Service;
 import com.googlecode.jsonrpc4j.ErrorResolver;
 import com.googlecode.jsonrpc4j.JsonRpcServer;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,8 +46,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Use JUnit test to start the uiautomator jsonrpc server.
@@ -92,11 +85,6 @@ public class Stub {
         server.start();
     }
 
-
-
-
-
-
     @After
     public void tearDown() {
         server.stop();
@@ -106,8 +94,10 @@ public class Stub {
     @Test
     @LargeTest
     public void testUIAutomatorStub() throws InterruptedException {
+        Context context = InstrumentationRegistry.getInstrumentation().getContext();
         while (server.isAlive()) {
-            Thread.sleep(100);
+            context.sendBroadcast(new Intent("com.github.tikmatrix.stub.STUB_RUNNING"));
+            Thread.sleep(1000);
         }
     }
 }

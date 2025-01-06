@@ -4,7 +4,10 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -52,9 +55,10 @@ public class MainActivity extends Activity {
     private Switch switchFloatingWindow;
     private TextView tvWanIp;
     private TextView tvRunningStatus;
-
-
     private OkhttpManager okhttpManager = OkhttpManager.getSingleton();
+    private boolean isStubRunning = false;
+    public static final String  STUB_STATUS_ACTION = "com.github.tikmatrix.stub.STUB_RUNNING";
+    private BroadcastReceiver mStubStatusReceiver;
 
 
 
@@ -115,7 +119,29 @@ public class MainActivity extends Activity {
             };
         }
         Permissons4App.initPermissions(this, permissions);
-
+        mStubStatusReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (STUB_STATUS_ACTION.equals(intent.getAction())) {
+                    // Stub 正在运行
+                    Log.i(TAG, "stub running");
+                    if (isStubRunning) {
+                        return;
+                    }
+                    tvRunningStatus.setText("Success");
+                    tvRunningStatus.setTextColor(Color.GREEN);
+                    isStubRunning=true;
+                }
+            }
+        };
+        IntentFilter filter = new IntentFilter(STUB_STATUS_ACTION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Log.i(TAG, "registerReceiver >= 8");
+            registerReceiver(mStubStatusReceiver, filter, null, null, Context.RECEIVER_EXPORTED);
+        }else {
+            Log.i(TAG, "registerReceiver < 8");
+            registerReceiver(mStubStatusReceiver, filter);
+        }
         // register BroadcastReceiver
 //        IntentFilter intentFilter = new IntentFilter();
 //        intentFilter.addAction("com.github.tikmatrix.ACTION.SHOW_TOAST");
@@ -157,7 +183,9 @@ public class MainActivity extends Activity {
             startActivity(sendIntent);
             Log.d(TAG, "onReceive: sent to " + packagename);
             moveTaskToBack(true);
+
         }
+
     }
     private void requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -202,68 +230,20 @@ public class MainActivity extends Activity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Permissons4App.handleRequestPermissionsResult(requestCode, permissions, grantResults);
     }
-
     public void testUiautomator() {
-        //send boardcast to uiautomator
-//        Intent intent = new Intent();
-//        intent.setAction("com.github.tikmatrix.ACTION.SHOW_TOAST");
-//        intent.putExtra("toast_text", "test uiautomator");
-//        intent.putExtra("duration", 2000);
-//        sendBroadcast(intent);
-//        Log.i(TAG, "send boardcast to AdbBroadcastReceiver");
-
-        String json = "{" +
-                "            \"jsonrpc\": \"2.0\",\n" +
-                "            \"id\": \"14d3bbb25360373624ea5b343c5abb1f\", \n" +
-                "            \"method\": \"deviceInfo\",\n" +
-                "            \"params\": []\n" +
-                "        }";
-        Request request = new Request.Builder()
-                .url("http://127.0.0.1:9008/jsonrpc/0")
-                .post(RequestBody.create(MediaType.parse("application/json"), json))
-                .build();
-        tvRunningStatus.setText("connecting...");
-        okhttpManager.newCall(request, new Callback() {
-            private void showFail() {
-                runOnUiThread(() -> {
-                    boolean isInstalled = Permissons4App.isAppInstalled(MainActivity.this, "com.github.tikmatrix.test");
-                    if (!isInstalled) {
-                        tvRunningStatus.setText("agent not installed, please click init app in the computer");
-                        tvRunningStatus.setTextColor(Color.RED);
-                    }else{
-                        tvRunningStatus.setText("agent not start, please enable auto wake up in the computer");
-                        tvRunningStatus.setTextColor(Color.RED);
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(Call call, IOException e) {
-                    Log.e(TAG, e.toString());
-                    showFail();
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) {
-                try {
-                    if (response.body() == null || !response.isSuccessful()) {
-                        Log.e(TAG, response.toString());
-                        showFail();
-                        return;
-                    }
-                    String responseData = response.body().string();
-                    Log.i(TAG, responseData);
-                    runOnUiThread(() -> {
-                        tvRunningStatus.setText("Success");
-                        tvRunningStatus.setTextColor(Color.GREEN);
-                    });
-
-                } catch (IOException e) {
-                    Log.e(TAG, e.toString());
-                    showFail();
-                }
-            }
-        });
+        if (isStubRunning) {
+            tvRunningStatus.setText("Success");
+            tvRunningStatus.setTextColor(Color.GREEN);
+            return;
+        }
+        boolean isInstalled = Permissons4App.isAppInstalled(MainActivity.this, "com.github.tikmatrix.test");
+        if (!isInstalled) {
+            tvRunningStatus.setText("agent not installed, please click init app in the computer");
+            tvRunningStatus.setTextColor(Color.RED);
+        }else{
+            tvRunningStatus.setText("agent not start, please enable auto wake up in the computer");
+            tvRunningStatus.setTextColor(Color.RED);
+        }
     }
 
 
@@ -352,5 +332,8 @@ public class MainActivity extends Activity {
         // must unbind service, otherwise it will leak memory
         // connection no need to set it to null
         Log.i(TAG, "unbind service");
+        if (mStubStatusReceiver != null) {
+            unregisterReceiver(mStubStatusReceiver);
+        }
     }
 }

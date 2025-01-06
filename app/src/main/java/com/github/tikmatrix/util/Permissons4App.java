@@ -1,6 +1,7 @@
 package com.github.tikmatrix.util;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -9,6 +10,8 @@ import androidx.core.content.ContextCompat;
 import android.util.Log;
 
 import com.github.tikmatrix.MainActivity;
+
+import java.util.List;
 
 public class Permissons4App {
     private static final String TAG = Permissons4App.class.getSimpleName();
@@ -87,6 +90,18 @@ public class Permissons4App {
             return true;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
+        }
+        return false;
+    }
+    public static boolean isAppRunning(MainActivity mainActivity, String packageName) {
+        ActivityManager am = (ActivityManager) mainActivity.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> runningAppProcesses = am.getRunningAppProcesses();
+        Log.i("runningAppProcess: ", String.valueOf(runningAppProcesses.size()));
+        for (ActivityManager.RunningAppProcessInfo runningAppProcess : runningAppProcesses) {
+            Log.i("runningAppProcess: ", runningAppProcess.processName);
+            if (runningAppProcess.processName.equals(packageName)) {
+                return true;
+            }
         }
         return false;
     }
