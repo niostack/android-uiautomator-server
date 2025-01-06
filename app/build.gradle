@@ -27,7 +27,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.2' // Ensure this is 3.0.0 or higher
+        classpath 'com.android.tools.build:gradle:8.7.3' // Ensure this is 3.0.0 or higher
     }
 }
 
@@ -40,7 +40,7 @@ android {
     // 1: original version
     // 2: update all dependencies to latest
     // 6: input method, battery,rotation monitor
-
+    namespace 'com.github.tikmatrix'
     defaultConfig {
         applicationId "com.github.tikmatrix"
         minSdkVersion 21
@@ -71,23 +71,23 @@ android {
             abortOnError false
         }
     }
+    packagingOptions {
+        resources {
+            excludes += ['LICENSE.txt', 'META-INF/LICENSE', 'META-INF/NOTICE']
+        }
+    }
 
     defaultConfig {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
     }
 
-    packagingOptions {
-        exclude 'LICENSE.txt'
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/NOTICE'
-    }
 
     // fix try-with-resource warning
     // ref: https://stackoverflow.com/questions/40408628/try-with-resources-requires-api-level-19-okhttp
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility agp_version
+        targetCompatibility agp_version
     }
 }
 

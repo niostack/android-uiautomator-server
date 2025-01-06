@@ -4,11 +4,9 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.NotificationManager;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -16,7 +14,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.FileProvider;
-import android.content.IntentFilter;
 
 import android.text.format.Formatter;
 import android.util.Log;
@@ -227,14 +224,23 @@ public class MainActivity extends Activity {
                 .build();
         tvRunningStatus.setText("connecting...");
         okhttpManager.newCall(request, new Callback() {
+            private void showFail() {
+                runOnUiThread(() -> {
+                    boolean isInstalled = Permissons4App.isAppInstalled(MainActivity.this, "com.github.tikmatrix.test");
+                    if (!isInstalled) {
+                        tvRunningStatus.setText("agent not installed, please click init app in the computer");
+                        tvRunningStatus.setTextColor(Color.RED);
+                    }else{
+                        tvRunningStatus.setText("agent not start, please enable auto wake up in the computer");
+                        tvRunningStatus.setTextColor(Color.RED);
+                    }
+                });
+            }
 
             @Override
             public void onFailure(Call call, IOException e) {
                     Log.e(TAG, e.toString());
-                    runOnUiThread(() -> {
-                        tvRunningStatus.setText("fail");
-                        tvRunningStatus.setTextColor(Color.RED);
-                    });
+                    showFail();
             }
 
             @Override
@@ -242,25 +248,19 @@ public class MainActivity extends Activity {
                 try {
                     if (response.body() == null || !response.isSuccessful()) {
                         Log.e(TAG, response.toString());
-                        runOnUiThread(() -> {
-                            tvRunningStatus.setText("fail");
-                            tvRunningStatus.setTextColor(Color.RED);
-                        });
+                        showFail();
                         return;
                     }
                     String responseData = response.body().string();
                     Log.i(TAG, responseData);
                     runOnUiThread(() -> {
-                        tvRunningStatus.setText("success");
+                        tvRunningStatus.setText("Success");
                         tvRunningStatus.setTextColor(Color.GREEN);
                     });
 
                 } catch (IOException e) {
                     Log.e(TAG, e.toString());
-                    runOnUiThread(() -> {
-                        tvRunningStatus.setText("fail");
-                        tvRunningStatus.setTextColor(Color.RED);
-                    });
+                    showFail();
                 }
             }
         });

@@ -19,7 +19,7 @@ public class InputManagerWrapper {
             eventInjector = new InputManagerEventInjector();
         }
         catch (UnsupportedOperationException e) {
-            eventInjector = new WindowManagerEventInjector();
+//            eventInjector = new WindowManagerEventInjector();
         }
     }
 
@@ -82,43 +82,43 @@ public class InputManagerWrapper {
     /**
      * EventInjector for SDK <16
      */
-    private class WindowManagerEventInjector implements EventInjector {
-        private Object windowManager;
-        private Method keyInjector;
-
-        public WindowManagerEventInjector() {
-            try {
-                windowManager = WindowManagerWrapper.getWindowManager();
-
-                keyInjector = windowManager.getClass()
-                        // public boolean injectKeyEvent(android.view.KeyEvent ev, boolean sync)
-                        // throws android.os.RemoteException
-                        .getMethod("injectKeyEvent", KeyEvent.class, boolean.class);
-            }
-            catch (NoSuchMethodException e) {
-                e.printStackTrace();
-                throw new UnsupportedOperationException("WindowManagerEventInjector is not supported");
-            }
-        }
-
-        public boolean injectKeyEvent(KeyEvent event) {
-            try {
-                keyInjector.invoke(windowManager, event, false);
-                return true;
-            }
-            catch (IllegalAccessException e) {
-                e.printStackTrace();
-                return false;
-            }
-            catch (InvocationTargetException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-
-        @Override
-        public boolean injectInputEvent(InputEvent event) {
-            return false;
-        }
-    }
+//    private class WindowManagerEventInjector implements EventInjector {
+//        private Object windowManager;
+//        private Method keyInjector;
+//
+//        public WindowManagerEventInjector() {
+//            try {
+//                windowManager = WindowManagerWrapper.getWindowManager();
+//
+//                keyInjector = windowManager.getClass()
+//                        // public boolean injectKeyEvent(android.view.KeyEvent ev, boolean sync)
+//                        // throws android.os.RemoteException
+//                        .getMethod("injectKeyEvent", KeyEvent.class, boolean.class);
+//            }
+//            catch (NoSuchMethodException e) {
+//                e.printStackTrace();
+//                throw new UnsupportedOperationException("WindowManagerEventInjector is not supported");
+//            }
+//        }
+//
+//        public boolean injectKeyEvent(KeyEvent event) {
+//            try {
+//                keyInjector.invoke(windowManager, event, false);
+//                return true;
+//            }
+//            catch (IllegalAccessException e) {
+//                e.printStackTrace();
+//                return false;
+//            }
+//            catch (InvocationTargetException e) {
+//                e.printStackTrace();
+//                return false;
+//            }
+//        }
+//
+//        @Override
+//        public boolean injectInputEvent(InputEvent event) {
+//            return false;
+//        }
+//    }
 }
