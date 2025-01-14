@@ -2,7 +2,6 @@ package com.github.tikmatrix;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,14 +13,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.FileProvider;
 
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.github.tikmatrix.util.MemoryManager;
@@ -42,32 +41,31 @@ import java.util.TimeZone;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.MediaType;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
-
-public class MainActivity extends Activity {
+@SuppressLint({"SetTextI18n", "UnspecifiedRegisterReceiverFlag"})
+public class MainActivity extends AppCompatActivity {
     public static final String TAG="TikMatrix";
     private TextView tvInStorage;
     private TextView textViewIP;
-    private Switch switchNotification;
-    private Switch switchFloatingWindow;
+    private SwitchCompat switchNotification;
+    private SwitchCompat switchFloatingWindow;
     private TextView tvWanIp;
     private TextView tvRunningStatus;
-    private OkhttpManager okhttpManager = OkhttpManager.getSingleton();
+    private final OkhttpManager okhttpManager = OkhttpManager.getSingleton();
     private boolean isStubRunning = false;
     public static final String  STUB_STATUS_ACTION = "com.github.tikmatrix.stub.STUB_RUNNING";
     private BroadcastReceiver mStubStatusReceiver;
 
 
 
-    @SuppressLint("SetTextI18n")
-    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setTitle("TikMatrix");
+
         ((TextView) findViewById(R.id.product_name)).setText(Build.MANUFACTURER + " " + Build.MODEL);
         ((TextView) findViewById(R.id.android_system_version)).setText("Android " + Build.VERSION.RELEASE+" SDK " + Build.VERSION.SDK_INT);
         ((TextView) findViewById(R.id.language)).setText(Locale.getDefault().getCountry() + "-" + Locale.getDefault().getLanguage());
@@ -101,9 +99,7 @@ public class MainActivity extends Activity {
             moveTaskToBack(true);
         }
         textViewIP = findViewById(R.id.ip_address);
-        String ipAddress = getEthernetIpAddress();
-        textViewIP.setText(ipAddress);
-        textViewIP.setTextColor(Color.BLUE);
+
         tvInStorage = findViewById(R.id.in_storage);
         tvWanIp = findViewById(R.id.wan_ip_address);
         tvRunningStatus = findViewById(R.id.running_status);
@@ -142,10 +138,7 @@ public class MainActivity extends Activity {
             Log.i(TAG, "registerReceiver < 8");
             registerReceiver(mStubStatusReceiver, filter);
         }
-        // register BroadcastReceiver
-//        IntentFilter intentFilter = new IntentFilter();
-//        intentFilter.addAction("com.github.tikmatrix.ACTION.SHOW_TOAST");
-//        registerReceiver(new AdbBroadcastReceiver(), intentFilter, Context.RECEIVER_EXPORTED);
+
     }
 
     @Override
@@ -173,7 +166,7 @@ public class MainActivity extends Activity {
                 uris.add(uri);
             }
 
-            //send to com.zhiliaoapp.musically
+            //send to tiktok
             Intent sendIntent = new Intent();
             sendIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
             sendIntent.setType("image/*");
@@ -220,10 +213,7 @@ public class MainActivity extends Activity {
         return true;
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -232,16 +222,16 @@ public class MainActivity extends Activity {
     }
     public void testUiautomator() {
         if (isStubRunning) {
-            tvRunningStatus.setText("Success");
+            tvRunningStatus.setText("Agent is running!");
             tvRunningStatus.setTextColor(Color.GREEN);
             return;
         }
         boolean isInstalled = Permissons4App.isAppInstalled(MainActivity.this, "com.github.tikmatrix.test");
         if (!isInstalled) {
-            tvRunningStatus.setText("agent not installed, please click init app in the computer");
+            tvRunningStatus.setText("Agent not installed!");
             tvRunningStatus.setTextColor(Color.RED);
         }else{
-            tvRunningStatus.setText("agent not start, please enable auto wake up in the computer");
+            tvRunningStatus.setText("Agent not started!");
             tvRunningStatus.setTextColor(Color.RED);
         }
     }
@@ -277,19 +267,15 @@ public class MainActivity extends Activity {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, e.toString());
         }
         return "0.0.0.0";
     }
     public void checkNetworkAddress(View v) {
-//        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-//        int ip = wifiManager.getConnectionInfo().getIpAddress();
-//        String ipStr = (ip & 0xFF) + "." + ((ip >> 8) & 0xFF) + "." + ((ip >> 16) & 0xFF) + "." + ((ip >> 24) & 0xFF);
-//        textViewIP.setText(ipStr);
-//        textViewIP.setTextColor(Color.BLUE);
-//
-//        Log.i(TAG, "checkNetworkAddress: " + ipStr);
-        //test
+        String ipAddress = getEthernetIpAddress();
+        textViewIP.setText(ipAddress);
+        textViewIP.setTextColor(Color.BLUE);
+
         Request request = new Request.Builder().url("https://api.tikmatrix.com/ip")
                 .get()
                 .build();
@@ -298,6 +284,10 @@ public class MainActivity extends Activity {
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.e(TAG, e.toString());
+                runOnUiThread(() -> {
+                    tvWanIp.setText("Network Error");
+                    tvWanIp.setTextColor(Color.RED);
+                });
             }
 
             @Override
@@ -329,8 +319,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // must unbind service, otherwise it will leak memory
-        // connection no need to set it to null
         Log.i(TAG, "unbind service");
         if (mStubStatusReceiver != null) {
             unregisterReceiver(mStubStatusReceiver);

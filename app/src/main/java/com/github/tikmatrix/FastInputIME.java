@@ -1,5 +1,6 @@
 package com.github.tikmatrix;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -18,6 +19,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.ExtractedText;
 import android.view.inputmethod.ExtractedTextRequest;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
@@ -26,7 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.util.Random;
 
-
+@SuppressLint({"SetTextI18n", "UnspecifiedRegisterReceiverFlag"})
 public class FastInputIME extends InputMethodService {
     private static final String TAG = "FastInputIME";
     private BroadcastReceiver mReceiver = null;
@@ -267,6 +269,13 @@ public class FastInputIME extends InputMethodService {
     private void clearText() {
         // Refs: https://stackoverflow.com/questions/33082004/android-custom-soft-keyboard-how-to-clear-edit-text-commited-text
         InputConnection ic = getCurrentInputConnection();
+        if (ic == null) {
+            return;
+        }
+        ExtractedText text = ic.getExtractedText(new ExtractedTextRequest(), 0);
+        if (text == null) {
+            return;
+        }
         CharSequence currentText = ic.getExtractedText(new ExtractedTextRequest(), 0).text;
         CharSequence beforCursorText = ic.getTextBeforeCursor(currentText.length(), 0);
         CharSequence afterCursorText = ic.getTextAfterCursor(currentText.length(), 0);

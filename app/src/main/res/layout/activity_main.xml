@@ -3,35 +3,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.github.tikmatrix.MainActivity">
+    tools:context="com.github.tikmatrix.MainActivity"
+    android:padding="16dp"
+    android:background="@color/background_color">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="8dp"
+        android:background="@drawable/rounded_corner">
         <TextView
             android:id="@+id/product_name"
             style="@style/CenterTitle"
-            android:text=""
-            android:textStyle="bold"/>
+            android:text=""/>
         <TextView
             android:id="@+id/android_system_version"
             style="@style/CenterTitle"
-            android:text=""
-            android:textStyle="bold"/>
+            android:text=""/>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider_color"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background="@drawable/rounded_corner">
             <TextView
                 style="@style/LeftTitle"
+                android:text="@string/notification_permission" />
+            <androidx.appcompat.widget.SwitchCompat
                 android:layout_width="0dp"
-                android:layout_weight="1"
-                android:text="@string/notification_permission"
-                android:textStyle="bold" />
-            <Switch
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/notification_permission"
                 android:layout_weight="1"
@@ -41,15 +46,14 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background="@drawable/rounded_corner">
             <TextView
                 style="@style/LeftTitle"
+                android:text="@string/floating_window_permission"/>
+            <androidx.appcompat.widget.SwitchCompat
                 android:layout_width="0dp"
-                android:layout_weight="1"
-                android:text="@string/floating_window_permission"
-                android:textStyle="bold" />
-            <Switch
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/floating_window_permission"
                 android:layout_weight="1"
@@ -59,110 +63,110 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background="@drawable/rounded_corner">
 
             <TextView
                 style="@style/LeftTitle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:text="@string/language"
-                android:textStyle="bold"/>
+                android:text="@string/language"/>
 
             <TextView
                 android:id="@+id/language"
-                style="@style/LeftTitle"
+                android:gravity="center_vertical"
                 android:layout_width="0dp"
+                android:layout_height="match_parent"
                 android:layout_weight="2" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background="@drawable/rounded_corner">
 
             <TextView
                 style="@style/LeftTitle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:text="@string/timezone"
-                android:textStyle="bold"/>
+                android:text="@string/timezone"/>
 
             <TextView
                 android:id="@+id/timezone"
-                style="@style/LeftTitle"
+                android:gravity="center_vertical"
                 android:layout_width="0dp"
-                android:layout_weight="2" />
+                android:layout_height="match_parent"
+                android:layout_weight="2"  />
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background="@drawable/rounded_corner">
 
             <TextView
                 style="@style/LeftTitle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:text="@string/avaible_internal_storage"
-                android:textStyle="bold"/>
+                android:text="@string/available_internal_storage"/>
 
             <TextView
                 android:id="@+id/in_storage"
-                style="@style/LeftTitle"
+                android:gravity="center_vertical"
                 android:layout_width="0dp"
+                android:layout_height="match_parent"
                 android:layout_weight="2" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background="@drawable/rounded_corner">
 
             <TextView
                 style="@style/LeftTitle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:text="@string/ip_address"
-                android:textStyle="bold"/>
+                android:text="@string/ip_address"/>
 
             <TextView
                 android:id="@+id/ip_address"
-                style="@style/LeftTitle"
-                android:layout_width="0dp"
-                android:layout_weight="2" />
+                android:gravity="center_vertical"
+                android:layout_weight="2"
+                android:layout_height="match_parent"
+                android:layout_width="0dp" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background="@drawable/rounded_corner">
 
             <TextView
                 style="@style/LeftTitle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:text="@string/wan_ip_address"
-                android:textStyle="bold"/>
+                android:text="@string/wan_ip_address"/>
 
             <TextView
                 android:id="@+id/wan_ip_address"
-                style="@style/LeftTitle"
+                android:gravity="center_vertical"
                 android:layout_width="0dp"
+                android:layout_height="match_parent"
                 android:layout_weight="2" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background="@drawable/rounded_corner">
 
             <TextView
                 style="@style/LeftTitle"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:text="@string/running_status"
-                android:textStyle="bold"/>
+                android:text="@string/running_status"/>
 
             <TextView
                 android:id="@+id/running_status"
-                style="@style/LeftTitle"
+                android:gravity="center_vertical"
                 android:layout_width="0dp"
+                android:layout_height="match_parent"
                 android:layout_weight="2" />
         </LinearLayout>
 

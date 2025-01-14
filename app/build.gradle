@@ -27,7 +27,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.7.3' // Ensure this is 3.0.0 or higher
+        classpath 'com.android.tools.build:gradle:8.8.0' // Ensure this is 3.0.0 or higher
     }
 }
 

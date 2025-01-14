@@ -291,4 +291,6 @@
     <color name="black">#000000</color>
     <!-- 黑色 -->
     <color name="font">#222222</color>
+    <color name="background_color">#F5F5F5</color>
+    <color name="divider_color">#BDBDBD</color>
 </resources>
